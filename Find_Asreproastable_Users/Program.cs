@@ -1,16 +1,12 @@
 ﻿using Find_Asreproastable_Users;
 
-var searcher = new AdComminication();
+var adCommunication = new AdCommunication(args[0], args[1], args[2]);
 
 try
 {
-    var users = searcher.GetVulnerableUsers(args[0], args[1], args[2]);
+    var users = AdCommunication.ShowVulnerableUsers();
 
-    if (users == null)
-    {
-        Console.WriteLine("I haven't found any asreproastable users");
-        return 0;
-    }
+    if (!users) return 0;
 }
 catch (IndexOutOfRangeException)
 {
@@ -22,7 +18,7 @@ var userInput = Console.ReadLine();
 
 if (userInput?.ToLower() == "y")
 {
-    searcher.ChangeSomeProperties(args[0], args[1], args[2]);
+    AdCommunication.ChangeSomeProperties();
 }
 
 return 0;

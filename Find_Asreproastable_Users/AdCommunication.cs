@@ -4,22 +4,32 @@ using LdapForNet.Native;
 
 namespace Find_Asreproastable_Users;
 
-public class AdComminication
+public class AdCommunication
 {
-    private static LdapConnection? Connect(string domain, string username, string password)
+    private static string? Domain { get; set; }
+    private static string? Username { get; set; }
+    private static string? Password { get; set; }
+    
+    public AdCommunication(string? domain, string? username, string? password)
+    {
+        Domain = domain;
+        Username = username;
+        Password = password;
+    }
+    private static LdapConnection? Connect()
     {
         var cn = new LdapConnection();
 
-        if (domain.Split(".").Length == 1)
+        if (Domain?.Split(".").Length == 1)
         {
             Console.WriteLine("The domain must have TLD\nTrying to add '.com'\n");
-            domain += ".com";
+            Domain += ".com";
         }
 
         try
         {
-            cn.Connect(new Uri($"LDAP://{domain}"));
-            cn.Bind(userDn: username, password: password);
+            cn.Connect(new Uri($"LDAP://{Domain}"));
+            cn.Bind(userDn: Username, password: Password);
         }
         catch (LdapInvalidCredentialsException)
         {
@@ -35,23 +45,36 @@ public class AdComminication
         return cn;
     }
 
+    public static bool ShowVulnerableUsers()
+    {
+        var entries = GetVulnerableUsers();
+
+        if (entries == null)
+        {
+            Console.WriteLine("I haven't found any asreproastable users");
+            return false;
+        }
+        
+        foreach (var e in entries)
+        {
+            Console.WriteLine(e.DirectoryAttributes["CN"].GetValue<string>());
+        }
+
+        return true;
+    }
+
     /// <summary>
     /// Returns users vulnerable to asreproasting attack
     /// </summary>
-    /// <param name="domain">Domain Controller Domain Name. Example: amazing.dc</param>
-    /// <param name="username">Username for LDAP connection</param>
-    /// <param name="password">Password for LDAP connection</param>
     /// <param name="cn">LDAP Connection</param>
-    /// <param name="getUsersOnly">Get users only or output to the terminal</param>
-    public IList<LdapEntry>? GetVulnerableUsers(string domain, string username, string password, LdapConnection? cn = null,
-        bool getUsersOnly = false)
+    private static IList<LdapEntry>? GetVulnerableUsers(LdapConnection? cn = null)
     {
-        cn ??= Connect(domain, username, password);
+        cn ??= Connect();
 
-        var splittedDomain = domain.Split('.');
+        var splittedDomain = Domain?.Split('.');
         IList<LdapEntry>? entries = new List<LdapEntry>();
 
-        switch (splittedDomain.Length)
+        switch (splittedDomain?.Length)
         {
             case 3:
                 entries = cn?.Search($"dc={splittedDomain[0]},dc={splittedDomain[1]},dc={splittedDomain[2]}",
@@ -64,28 +87,18 @@ public class AdComminication
         }
         
         if (entries == null || entries.Count == 0) return null;
-        if (getUsersOnly) return entries;
-
-        
-        foreach (var e in entries)
-        {
-            Console.WriteLine(e.DirectoryAttributes["CN"].GetValue<string>());
-        }
 
         return entries;
     }
-    
+
     /// <summary>
     /// Changes userAccountControl to 512 (NORMAL_ACCOUNT)
     /// </summary>
-    /// <param name="domain">Domain Controller Domain Name. Example: amazing.dc</param>
-    /// <param name="username">Username for LDAP connection</param>
-    /// <param name="password">Password for LDAP connection</param>
-    public void ChangeSomeProperties(string domain, string username, string password)
+    public static void ChangeSomeProperties()
     {
-        using var cn = Connect(domain, username, password);
+        using var cn = Connect();
 
-        var vulnerableUsers = GetVulnerableUsers(domain, username, password, cn, true);
+        var vulnerableUsers = GetVulnerableUsers(cn);
 
         if (vulnerableUsers == null) return;
         

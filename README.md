@@ -1,4 +1,4 @@
-# Find_Asreproastable_Users
+# Find Asreproastable Users
 
 Simple program that allows you to get users who are vulnerable to the asreproasting attack
 

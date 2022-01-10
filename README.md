@@ -38,4 +38,4 @@ Find_Asreproastable_Users.exe "domain.local" "john" "P@ssw0rd"
 | PARTIAL_SECRETS_ACCOUNT        | 0x04000000 | 67108864      |
 
 ***
-_Blog post about this attack will be here soon_
+_Blog post about this attack - [click](https://whoamins.github.io/active-directory/2022/01/09/asreproasting.html)_

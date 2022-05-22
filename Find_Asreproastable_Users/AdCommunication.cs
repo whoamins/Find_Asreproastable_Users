@@ -94,7 +94,7 @@ public class AdCommunication
     /// <summary>
     /// Changes userAccountControl to 512 (NORMAL_ACCOUNT)
     /// </summary>
-    public static void ChangeSomeProperties()
+    public static void ChangeUACToNormalAccount()
     {
         using var cn = Connect();
 
